@@ -1,0 +1,2 @@
+require("hfchow")
+print("Initialized")
