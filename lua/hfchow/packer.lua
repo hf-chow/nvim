@@ -5,7 +5,7 @@ return require('packer').startup(function(use)
   use 'wbthomason/packer.nvim'
   
   use {
-	  'nvim-telescope/telescope.nvim', tag = '0.1.1',
+	  'nvim-telescope/telescope.nvim', tag = '0.1.6',
 	  -- or                            , branch = '0.1.x',
 	  requires = { {'nvim-lua/plenary.nvim'} }
   }
@@ -21,6 +21,7 @@ return require('packer').startup(function(use)
   use ('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
   use ('mbbill/undotree')
   use ('tpope/vim-fugitive')
+  use ('sindrets/diffview.nvim')
   use {
 	  'VonHeikemen/lsp-zero.nvim',
 	  branch = 'v1.x',
@@ -38,6 +39,8 @@ return require('packer').startup(function(use)
 		  {'saadparwaiz1/cmp_luasnip'}, -- Optional
 		  {'hrsh7th/cmp-nvim-lua'},     -- Optional
 
+          -- Git Blame Support
+          {"FabijanZulj/blame.nvim"},
 		  -- Snippets
 		  {'L3MON4D3/LuaSnip'},             -- Required
 		  {'rafamadriz/friendly-snippets'}, -- Optional

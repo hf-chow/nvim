@@ -3,8 +3,12 @@ local lsp = require("lsp-zero")
 lsp.preset("recommended")
 
 lsp.ensure_installed({
-	'jedi_language_server',
+    'pyright',
 	'rust_analyzer',
+    'sqlls',
+    'gopls',
+    'tsserver',
+    'clangd'
 })
 
 lsp.configure('lua-language-server', {
