@@ -34,6 +34,7 @@ require("lazy").setup({
     { 'stevearc/conform.nvim'},
     { 'saghen/blink.cmp' },
     { 'mason-org/mason.nvim' },
+    { 'neovim/nvim-lspconfig' },
     { 'WhoIsSethDaniel/mason-tool-installer.nvim', 
         opts = {
             ensure_installed = {
