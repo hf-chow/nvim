@@ -25,12 +25,16 @@ vim.g.maplocalleader = "\\"
 require("lazy").setup({
   spec = {
     { import = "plugins"},
-    { "folke/tokyonight.nvim", config = function() vim.cmd.colorscheme "tokyonight" end },
-    {"nvim-treesitter/nvim-treesitter", branch = 'master', lazy = false, build = ":TSUpdate"},
+    { "NMAC427/guess-indent.nvim"},
+    { 'lewis6991/gitsigns.nvim',opts = {}},
+    { "folke/tokyonight.nvim", config = function() vim.cmd.colorscheme "tokyonight-night" end },
+    { "nvim-treesitter/nvim-treesitter", branch = 'master', lazy = false, build = ":TSUpdate"},
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' }},
-  },
-  -- Configure any other settings here. See the documentation for more details.
-  -- colorscheme that will be used when installing plugins.
-  -- automatically check for plugin updates
+    { 'folke/lazydev.nvim', ft = 'lua', opts = { library = {{ path = '${3rd}/luv/library', words = { 'vim%.uv' }}}}},
+    { 'saghen/blink.cmp' },
+    { 'mason-org/mason.nvim' },
+    { 'WhoIsSethDaniel/mason-tool-installer.nvim' },
+    { 'stevearc/conform.nvim'},
+    },
   checker = { enabled = true },
 })
