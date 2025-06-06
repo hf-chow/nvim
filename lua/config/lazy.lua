@@ -24,7 +24,7 @@ require("lazy").setup({
     { "NMAC427/guess-indent.nvim"},
     { 'lewis6991/gitsigns.nvim',opts = {}},
     { "folke/tokyonight.nvim", config = function() vim.cmd.colorscheme "tokyonight-night" end },
-    { "nvim-treesitter/nvim-treesitter", branch = 'master', lazy = false, build = ":TSUpdate"},
+--    { "nvim-treesitter/nvim-treesitter", branch = 'master', lazy = false, build = ":TSUpdate"},
     { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' }},
     { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
     { 'stevearc/conform.nvim'},
@@ -38,6 +38,7 @@ require("lazy").setup({
           {'mason-org/mason.nvim', opts={}},
           'mason-org/mason-lspconfig.nvim',
           'WhoIsSethDaniel/mason-tool-installer.nvim',
+          'j-hui/fidget.nvim',
           'saghen/blink.cmp',
       }, -- Added explicit dependency
       config = function()
@@ -106,7 +107,37 @@ require("lazy").setup({
           pyright = {},
           rust_analyzer = {},
         }
+      local ensure_installed = vim.tbl_keys(servers or {})
+      vim.list_extend(ensure_installed, {
+          'stylua',
+      })
+      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      require('mason-lspconfig').setup {
+          ensure_installed = {},
+          automatic_installation = false,
+          handlers = {
+              function(server_name) 
+                local server = servers[server_name] or {}
+                server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, sever.capabilities or {})
+                require('lspconfig')[server_name].setup(server)
+            end,
+          },
+        }
       end,
+     },
+     { -- Highlight, edit, and navigate code
+         'nvim-treesitter/nvim-treesitter',
+         build = ':TSUpdate',
+         main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+         opts = {
+             ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+             auto_install = true,
+             highlight = {
+                 enable = true,
+                 additional_vim_regex_highlighting = { 'ruby' },
+             },
+             indent = { enable = true, disable = { 'ruby' } },
+         },
      },
      { 'WhoIsSethDaniel/mason-tool-installer.nvim', 
         opts = {
