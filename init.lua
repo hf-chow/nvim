@@ -1,3 +1,3 @@
 require("hfchow")
-require("config.lazy")
+require("config.lazy").setup("plugins")
 print("Initialized")
