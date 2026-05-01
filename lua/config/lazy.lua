@@ -337,7 +337,7 @@ require("lazy").setup({
 		opts = {
 			keymap = {
 				preset = "default",
-				["<c-enter>"] = { "accept" },
+				["<enter>"] = { "accept" },
 			},
 
 			appearance = {
