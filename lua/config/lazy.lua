@@ -209,6 +209,11 @@ require("lazy").setup({
 							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
 						end, "[T]oggle Inlay [H]ints")
 					end
+
+					-- clangd: switch between source/header (.cpp <-> .h)
+					if client and client.name == "clangd" then
+						map("<leader>o", "<cmd>ClangdSwitchSourceHeader<CR>", "Switch S[o]urce/Header")
+					end
 				end,
 			})
 
@@ -241,7 +246,22 @@ require("lazy").setup({
 
 			local capabilities = require("blink.cmp").get_lsp_capabilities()
 			local servers = {
-				clangd = {},
+				clangd = {
+					cmd = {
+						"clangd",
+						"--background-index",
+						"--clang-tidy",
+						"--header-insertion=iwyu",
+						"--completion-style=detailed",
+						"--function-arg-placeholders",
+						"--fallback-style=llvm",
+					},
+					init_options = {
+						usePlaceholders = true,
+						completeUnimported = true,
+						clangdFileStatus = true,
+					},
+				},
 				gopls = {},
 				pyright = {},
 				ruff = {},
@@ -262,6 +282,8 @@ require("lazy").setup({
 			local ensure_installed = vim.tbl_keys(servers or {})
 			vim.list_extend(ensure_installed, {
 				"stylua",
+				"clang-format", -- C/C++ formatter
+				"codelldb", -- C/C++/Rust debug adapter
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
@@ -296,7 +318,7 @@ require("lazy").setup({
 		opts = {
 			notify_on_error = false,
 			format_on_save = function(bufnr)
-				local disable_filetypes = { c = true, cpp = true }
+				local disable_filetypes = {}
 				if disable_filetypes[vim.bo[bufnr].filetype] then
 					return nil
 				else
@@ -308,8 +330,73 @@ require("lazy").setup({
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
+				c = { "clang-format" },
+				cpp = { "clang-format" },
 			},
 		},
+	},
+
+	{
+		"mfussenegger/nvim-dap",
+		dependencies = {
+			"rcarriga/nvim-dap-ui",
+			"nvim-neotest/nvim-nio",
+			"theHamsta/nvim-dap-virtual-text",
+		},
+		keys = {
+			{ "<leader>dc", function() require("dap").continue() end, desc = "Debug: Start/Continue" },
+			{ "<leader>do", function() require("dap").step_over() end, desc = "Debug: Step Over" },
+			{ "<leader>di", function() require("dap").step_into() end, desc = "Debug: Step Into" },
+			{ "<leader>dO", function() require("dap").step_out() end, desc = "Debug: Step Out" },
+			{ "<leader>dt", function() require("dap").terminate() end, desc = "Debug: Terminate" },
+			{ "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Debug: Toggle Breakpoint" },
+			{
+				"<leader>dB",
+				function()
+					require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+				end,
+				desc = "Debug: Conditional Breakpoint",
+			},
+			{ "<leader>du", function() require("dapui").toggle() end, desc = "Debug: Toggle UI" },
+		},
+		config = function()
+			local dap = require("dap")
+			local dapui = require("dapui")
+
+			dapui.setup()
+			require("nvim-dap-virtual-text").setup()
+
+			-- Auto open/close the DAP UI
+			dap.listeners.after.event_initialized["dapui_config"] = dapui.open
+			dap.listeners.before.event_terminated["dapui_config"] = dapui.close
+			dap.listeners.before.event_exited["dapui_config"] = dapui.close
+
+			-- codelldb adapter (installed via Mason)
+			local mason_path = vim.fn.stdpath("data") .. "/mason"
+			dap.adapters.codelldb = {
+				type = "server",
+				port = "${port}",
+				executable = {
+					command = mason_path .. "/bin/codelldb",
+					args = { "--port", "${port}" },
+				},
+			}
+
+			local cpp_config = {
+				{
+					name = "Launch file",
+					type = "codelldb",
+					request = "launch",
+					program = function()
+						return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+					end,
+					cwd = "${workspaceFolder}",
+					stopOnEntry = false,
+				},
+			}
+			dap.configurations.cpp = cpp_config
+			dap.configurations.c = cpp_config
+		end,
 	},
 
 	{
@@ -404,6 +491,9 @@ require("lazy").setup({
 			ensure_installed = {
 				"bash",
 				"c",
+				"cpp",
+				"cmake",
+				"make",
 				"diff",
 				"html",
 				"lua",
